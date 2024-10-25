@@ -1,0 +1,191 @@
+﻿<Patterns xmlns="urn:schemas-jetbrains-com:member-reordering-patterns">
+  <TypePattern DisplayName="Unity classes" Priority="100">
+    <Entry DisplayName="Public Delegates" Priority="100">
+      <Entry.Match>
+        <And>
+          <Access Is="Public" />
+          <Kind Is="Delegate" />
+        </And>
+      </Entry.Match>
+
+      <Entry.SortBy>
+        <Name />
+      </Entry.SortBy>
+    </Entry>
+
+    <Entry DisplayName="Public Enums" Priority="100">
+      <Entry.Match>
+        <And>
+          <Access Is="Public" />
+          <Kind Is="Enum" />
+        </And>
+      </Entry.Match>
+
+      <Entry.SortBy>
+        <Name />
+      </Entry.SortBy>
+    </Entry>
+
+    <Entry DisplayName="Static Fields and Constants">
+      <Entry.Match>
+        <Or>
+          <Kind Is="Constant" />
+          <And>
+              <Or>
+                  <Kind Is="Field" />
+                  <Kind Is="Property" />
+              </Or>
+            <Static />
+          </And>
+        </Or>
+      </Entry.Match>
+
+      <Entry.SortBy>
+        <Kind>
+          <Kind.Order>
+            <DeclarationKind>Constant</DeclarationKind>
+            <DeclarationKind>Field</DeclarationKind>
+            <DeclarationKind>Property</DeclarationKind>
+          </Kind.Order>
+        </Kind>
+      </Entry.SortBy>
+    </Entry>
+        
+    <Entry DisplayName="Zenject Fields">
+      <Entry.Match>
+          <HasAttribute Name="Zenject.InjectAttribute" />
+      </Entry.Match>
+    </Entry>
+
+    <Entry DisplayName="Serialized Fields">
+      <Entry.Match>
+        <HasAttribute Name="UntiyEngine.SerializeField" />
+      </Entry.Match>
+    </Entry>
+
+    <Entry DisplayName="Public Field">
+        <Entry.Match>
+            <And>
+                <Access Is="Public" />
+                <Kind Is="Field" />
+            </And>
+        </Entry.Match>
+    </Entry>
+
+    <Entry DisplayName="Public Properties">
+      <Entry.Match>
+        <And>
+          <Access Is="Public" />
+          <Kind Is="Property" />
+        </And>
+      </Entry.Match>
+    </Entry>
+    
+    <Entry DisplayName="Public Indexers">
+      <Entry.Match>
+        <And>
+          <Access Is="Public" />
+          <Kind Is="Indexer" />
+        </And>
+      </Entry.Match>
+    </Entry>
+
+    <Entry DisplayName="Protected Field">
+      <Entry.Match>
+        <And>
+          <Access Is="Protected" />
+          <Kind Is="Field" />
+        </And>
+      </Entry.Match>
+    </Entry>
+
+    <Entry DisplayName="Protected Properties">
+      <Entry.Match>
+        <And>
+          <Access Is="Protected" />
+          <Kind Is="Property" />
+        </And>
+      </Entry.Match>
+    </Entry>
+
+    <Entry DisplayName="Protected Indexers">
+      <Entry.Match>
+        <And>
+          <Access Is="Protected" />
+          <Kind Is="Indexer" />
+        </And>
+      </Entry.Match>
+    </Entry>
+
+    <Entry DisplayName="Private Field">
+      <Entry.Match>
+        <And>
+          <Access Is="Private" />
+          <Kind Is="Field" />
+        </And>
+      </Entry.Match>
+    </Entry>
+
+    <Entry DisplayName="Private Properties">
+      <Entry.Match>
+        <And>
+          <Access Is="Private" />
+          <Kind Is="Property" />
+        </And>
+      </Entry.Match>
+    </Entry>
+
+    <Entry DisplayName="Private Indexers">
+      <Entry.Match>
+        <And>
+          <Access Is="Private" />
+          <Kind Is="Indexer" />
+        </And>
+      </Entry.Match>
+    </Entry>
+    
+    <Entry DisplayName="Interface Implementations Method" Priority="100">
+        <Entry.Match>
+            <And>
+                <Kind Is="Property" />
+                <ImplementsInterface />
+            </And>
+        </Entry.Match>
+
+        <Entry.SortBy>
+            <ImplementsInterface Immediate="true" />
+        </Entry.SortBy>
+    </Entry>
+
+    <Entry DisplayName="Interface Implementations Method" Priority="100">
+      <Entry.Match>
+        <And>
+          <Kind Is="Member" />
+          <ImplementsInterface />
+        </And>
+      </Entry.Match>
+
+      <Entry.SortBy>
+        <ImplementsInterface Immediate="true" />
+      </Entry.SortBy>
+    </Entry>
+      
+    <Entry DisplayName="Constructors">
+      <Entry.Match>
+        <Kind Is="Constructor" />
+      </Entry.Match>
+
+      <Entry.SortBy>
+        <Static/>
+      </Entry.SortBy>
+    </Entry>
+  
+    <Entry DisplayName="All other members" />
+
+    <Entry DisplayName="Nested Types">
+      <Entry.Match>
+        <Kind Is="Type" />
+      </Entry.Match>
+    </Entry>
+  </TypePattern>
+</Patterns>
