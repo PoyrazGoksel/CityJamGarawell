@@ -1,8 +1,8 @@
 ﻿#if UNITY_EDITOR
 
-namespace Components
+namespace Components.Buildings
 {
-    public abstract partial class Building
+    public partial class Building
     {
         private void SetID(int newID)
         {

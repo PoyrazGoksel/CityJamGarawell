@@ -1,3 +1,4 @@
+using Events.Internal;
 using Zenject;
 
 namespace Installers
@@ -6,7 +7,12 @@ namespace Installers
     {
         public override void InstallBindings()
         {
-            
+            InstallEvents();
+        }
+
+        private void InstallEvents()
+        {
+            Container.Bind<BuildingEventsInternal>().AsSingle();
         }
 
         public override void Start() {}
