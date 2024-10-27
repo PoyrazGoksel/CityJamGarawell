@@ -8,5 +8,6 @@ namespace Events
         public UnityAction<IBuilding> BuildingClicked;
         public UnityAction<bool> SortingRows;
         public UnityAction<IBuilding> BuildingArrivedToRow;
+        public UnityAction<IBuilding> PreBuildingDestroy;
     }
 }

@@ -18,6 +18,7 @@ namespace UI.Main.Components
     {
         [Inject] private BuildingEvents BuildingEvents{get;set;}
         [Inject] private PlayerVM PlayerVM{get;set;}
+        [Inject] private LevelEvents LevelEvents{get;set;}
         [SerializeField] private List<BuildingRowSerialized> _buildingRows;
         [ShowInInspector] private Dictionary<IBuildingRow, IBuilding> _rowBuildingDict = new();
         private List<IGrouping<int, IBuilding>> _groupedBuildings;
@@ -45,7 +46,9 @@ namespace UI.Main.Components
                 
                 return true;
             }
-
+         
+            LevelEvents.NoRowsLeft?.Invoke();
+            
             return false;
         }
 
@@ -115,6 +118,7 @@ namespace UI.Main.Components
                 building.DestroyMatch(destroyPos,
                     delegate
                     {
+                        BuildingEvents.PreBuildingDestroy?.Invoke(building);
                         building.Transform.gameObject.Destroy();
                     });
             }

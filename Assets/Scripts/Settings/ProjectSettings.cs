@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Components.Buildings;
 using Extensions.System;
@@ -13,12 +12,12 @@ namespace Settings
     public class ProjectSettings : ScriptableObjectInstaller<ProjectSettings>
     {
         private static ProjectSettings editorInstance;
-        public List<GameObject> BuildingPrefabsByID => _buildingPrefabsByID;
+        public List<BuildingData> BuildingDatasByID => _buildingDatasByID;
         public List<LevelData> Levels => _levels;
         public Building.Settings BuildingSettings => _buildingSettings;
         public BuildingRow.Settings BuildingRowSettings => _buildingRowSettings;
         [SerializeField] private List<LevelData> _levels;
-        [SerializeField] private List<GameObject> _buildingPrefabsByID = new();
+        [SerializeField] private List<BuildingData> _buildingDatasByID = new();
         [SerializeField] private Building.Settings _buildingSettings;
         [SerializeField] private BuildingRow.Settings _buildingRowSettings;
 
@@ -27,9 +26,9 @@ namespace Settings
         {
             if(areYouSure == false) return;
             
-            for(int i = 0; i < _buildingPrefabsByID.Count; i ++)
+            for(int i = 0; i < _buildingDatasByID.Count; i ++)
             {
-                GameObject buildingGo = _buildingPrefabsByID[i];
+                GameObject buildingGo = _buildingDatasByID[i].Prefab;
                 
                 buildingGo.GetComponent<IBuildingEditor>().SetID(i);
             }
@@ -42,19 +41,5 @@ namespace Settings
 
             return editorInstance;
         }
-
-        public GameObject GetBuilding(int buildingID)
-        {
-            return _buildingPrefabsByID.IsInRange(buildingID) ? _buildingPrefabsByID[buildingID] : null;
-        }
-    }
-
-    [Serializable]
-    public class LevelData
-    {
-        public GameObject LevelPrefab => _levelPrefab;
-        public float LevelTimerMins => _levelTimerMins;
-        [SerializeField] private GameObject _levelPrefab;
-        [SerializeField] private float _levelTimerMins = 4;
     }
 }

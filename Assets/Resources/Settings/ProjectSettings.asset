@@ -15,21 +15,40 @@ MonoBehaviour:
   _levels:
   - _levelPrefab: {fileID: 3250120825995641414, guid: 9896efa002c324648b3c6aee69f0fd38, type: 3}
     _levelTimerMins: 4
+    _taskBuildings:
+      _tKeys: 0200000004000000
+      _tValues: 0300000003000000
   - _levelPrefab: {fileID: 4437366102073533337, guid: e0e424310f68f7841b7be836690964df, type: 3}
     _levelTimerMins: 4
+    _taskBuildings:
+      _tKeys: 01000000
+      _tValues: 12000000
   - _levelPrefab: {fileID: 4437366102073533337, guid: d28aed5376c11674a93fce9ac083b036, type: 3}
     _levelTimerMins: 4
-  _buildingPrefabsByID:
-  - {fileID: 5156637700522824838, guid: 41db87c72ac64c14da20823db0cce7da, type: 3}
-  - {fileID: 7899909589353614899, guid: 0f7d6a2b9e3df1345b67687c39685adf, type: 3}
-  - {fileID: 3545966252811821080, guid: 9b9b45b4b185f9b4b8f6178221e5eb82, type: 3}
-  - {fileID: 1566824226051595199, guid: a4d36e72044315440a79fc42dc02b185, type: 3}
-  - {fileID: 7648105740439239040, guid: 92d45b8253d4291478888942e2f01905, type: 3}
-  - {fileID: 7839651374624697229, guid: 12bbd26ed14d96f459db3fcd407e0a59, type: 3}
-  - {fileID: 1872143066815086094, guid: 46bb87eca4342444a999b4925d3d261b, type: 3}
-  - {fileID: 6438074529179606819, guid: c96d2d6b025b3414ba4b8db43e4cac5e, type: 3}
-  - {fileID: 7729654830267459813, guid: 1ed365f8a3b040f4690023dd4862833e, type: 3}
-  - {fileID: 7729654830267459813, guid: 3e02e276f057d8c47affe411bc298a6c, type: 3}
+    _taskBuildings:
+      _tKeys: 070000000100000008000000
+      _tValues: 0c0000000f00000009000000
+  _buildingDatasByID:
+  - _prefab: {fileID: 5156637700522824838, guid: 41db87c72ac64c14da20823db0cce7da, type: 3}
+    _preview: {fileID: 21300000, guid: 3886b1629773bfa48820cc3ae93aff14, type: 3}
+  - _prefab: {fileID: 7899909589353614899, guid: 0f7d6a2b9e3df1345b67687c39685adf, type: 3}
+    _preview: {fileID: 21300000, guid: 3886b1629773bfa48820cc3ae93aff14, type: 3}
+  - _prefab: {fileID: 3545966252811821080, guid: 9b9b45b4b185f9b4b8f6178221e5eb82, type: 3}
+    _preview: {fileID: 21300000, guid: 77e23cadf7c84d748a12e6344ca2e3c1, type: 3}
+  - _prefab: {fileID: 1566824226051595199, guid: a4d36e72044315440a79fc42dc02b185, type: 3}
+    _preview: {fileID: 21300000, guid: 0a4058114c3bcb54eb4f61ba442750a7, type: 3}
+  - _prefab: {fileID: 7648105740439239040, guid: 92d45b8253d4291478888942e2f01905, type: 3}
+    _preview: {fileID: 21300000, guid: 660f2936655a33048ab9393276666498, type: 3}
+  - _prefab: {fileID: 7839651374624697229, guid: 12bbd26ed14d96f459db3fcd407e0a59, type: 3}
+    _preview: {fileID: 21300000, guid: 602de71285684224998b1edbbd26c54f, type: 3}
+  - _prefab: {fileID: 1872143066815086094, guid: 46bb87eca4342444a999b4925d3d261b, type: 3}
+    _preview: {fileID: 21300000, guid: 79fbb27cf6d35d640a6275649ffd61a6, type: 3}
+  - _prefab: {fileID: 6438074529179606819, guid: c96d2d6b025b3414ba4b8db43e4cac5e, type: 3}
+    _preview: {fileID: 21300000, guid: c37c4fcfad838fd47a6cfb97d54798f2, type: 3}
+  - _prefab: {fileID: 7729654830267459813, guid: 1ed365f8a3b040f4690023dd4862833e, type: 3}
+    _preview: {fileID: 21300000, guid: f24a50db21209ad408d364a5beca8437, type: 3}
+  - _prefab: {fileID: 7729654830267459813, guid: 3e02e276f057d8c47affe411bc298a6c, type: 3}
+    _preview: {fileID: 21300000, guid: a65e43bb90f6b7c4cba2858901c2e508, type: 3}
   _buildingSettings:
     _rowAssignAnimDur: 1
     _destroyAnimDur: 0.5
