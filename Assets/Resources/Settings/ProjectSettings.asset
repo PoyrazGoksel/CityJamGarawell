@@ -12,6 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3d651b447590774d94e5306cab1496d, type: 3}
   m_Name: ProjectSettings
   m_EditorClassIdentifier: 
+  _levels:
+  - _levelPrefab: {fileID: 3250120825995641414, guid: 9896efa002c324648b3c6aee69f0fd38, type: 3}
+    _levelTimerMins: 4
+  - _levelPrefab: {fileID: 4437366102073533337, guid: e0e424310f68f7841b7be836690964df, type: 3}
+    _levelTimerMins: 4
+  - _levelPrefab: {fileID: 4437366102073533337, guid: d28aed5376c11674a93fce9ac083b036, type: 3}
+    _levelTimerMins: 4
   _buildingPrefabsByID:
   - {fileID: 5156637700522824838, guid: 41db87c72ac64c14da20823db0cce7da, type: 3}
   - {fileID: 7899909589353614899, guid: 0f7d6a2b9e3df1345b67687c39685adf, type: 3}
@@ -23,4 +30,9 @@ MonoBehaviour:
   - {fileID: 6438074529179606819, guid: c96d2d6b025b3414ba4b8db43e4cac5e, type: 3}
   - {fileID: 7729654830267459813, guid: 1ed365f8a3b040f4690023dd4862833e, type: 3}
   - {fileID: 7729654830267459813, guid: 3e02e276f057d8c47affe411bc298a6c, type: 3}
-  _levelPrefabs: []
+  _buildingSettings:
+    _rowAssignAnimDur: 1
+    _destroyAnimDur: 0.5
+  _buildingRowSettings:
+    _buildingArrivedSagAmount: -10
+    _sagAnimDurHalf: 0.5

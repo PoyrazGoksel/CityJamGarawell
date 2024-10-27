@@ -4,7 +4,7 @@ namespace Components.Buildings
 {
     public partial class Building
     {
-        private void SetID(int newID)
+        public void SetID(int newID)
         {
             _id = newID;
         }
