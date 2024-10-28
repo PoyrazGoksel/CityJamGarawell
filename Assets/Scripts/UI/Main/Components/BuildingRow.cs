@@ -1,4 +1,4 @@
-﻿using Extensions.DoTween;
+﻿using Components.Buildings;
 using Settings;
 using UnityEngine;
 using Zenject;
@@ -9,7 +9,12 @@ namespace UI.Main.Components
     {
         [Inject] private ProjectSettings ProjectSettings{get;set;}
         public Transform Transform{get;private set;}
-        public ITweenContainer TweenContainer{get;set;}
+        public IBuilding Building{get;private set;}
+
+        public void SetBuilding(IBuilding building)
+        {
+            Building = building;
+        }
 
         private void Awake()
         {
@@ -20,5 +25,8 @@ namespace UI.Main.Components
     public interface IBuildingRow
     {
         Transform Transform{get;}
+        IBuilding Building{get;}
+
+        void SetBuilding(IBuilding building);
     }
 }

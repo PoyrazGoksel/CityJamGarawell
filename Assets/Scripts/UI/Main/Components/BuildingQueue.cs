@@ -22,10 +22,12 @@ namespace UI.Main.Components
         [Inject] private PlayerVM PlayerVM{get;set;}
         [Inject] private LevelEvents LevelEvents{get;set;}
         [Inject] private ProjectSettings ProjectSettings{get;set;}
-        [SerializeField] private List<BuildingRowSerialized> _buildingRows;
-        [ShowInInspector] private Dictionary<IBuildingRow, IBuilding> _rowBuildingDict = new();
-        private List<IGrouping<int, IBuilding>> _groupedBuildings;
+        [ReadOnly][SerializeField] private List<BuildingRowSerialized> _buildingRows;
         private Settings _settings;
+        private int _incBuildingCount;
+        [ShowInInspector] private List<IBuilding> _lastOrder = new();
+        [ShowInInspector] private BuildingRows BuildingRows{get;set;}
+        [ShowInInspector] private List<IBuilding> Buildings => BuildingRows.Select(e => e.Building).ToList();
 
         private void Awake()
         {
@@ -35,19 +37,21 @@ namespace UI.Main.Components
 
         private void CreateBuildingQueue()
         {
-            foreach(IBuildingRow buildingRowSerialized in _buildingRows.Select(e => e.Value()))
+            BuildingRows = new BuildingRows();
+            
+            foreach(BuildingRowSerialized rowSerialized in _buildingRows)
             {
-                if(_rowBuildingDict.TryAdd(buildingRowSerialized, null)) {}
+                BuildingRows.Add(rowSerialized.Value());
             }
         }
 
         private bool TryFitBuilding(IBuilding arg0)
         {
-            if(_rowBuildingDict.Values.Count == _rowBuildingDict.Count.ToIndex())
+            if(BuildingRows.BuildingCount() == BuildingRows.Count - 1)
             {
-                int incomingMatch = _rowBuildingDict.Values.Count(e => e.ID == arg0.ID);
+                int incomingMatchCount = BuildingRows.GetSameIDBuildingCount(arg0);
 
-                if(incomingMatch <= 2)
+                if(incomingMatchCount <= 2)
                 {
                     Debug.LogWarning("FailCond: NoRows");
                     LevelEvents.NoRowsLeft?.Invoke();
@@ -68,152 +72,125 @@ namespace UI.Main.Components
 
         private void SortBuildings()
         {
-            List<IBuildingRow> keysList = _rowBuildingDict.Keys.ToList();
+            _lastOrder = BuildingRows.GetBuildingsGroupedByID().SelectMany(group => group).ToList();
 
-            _groupedBuildings = _rowBuildingDict.Values.NotNull().GroupBy(e => e.ID)
-            .OrderBy(group => group.Key)
-            .ToList();
-
-            int index = 0;
-
-            List<KeyValuePair<IBuildingRow, IBuilding>> newOrder = new();
-            
-            foreach (IGrouping<int, IBuilding> group in _groupedBuildings)
+            for(int i = 0; i < _lastOrder.Count; i ++)
             {
-                foreach (IBuilding buildingToAssign in group.OrderBy(b => b.ID))
-                {
-                    IBuildingRow thisRow = keysList[index];
-
-                    IBuilding currentBuilding = _rowBuildingDict[thisRow];
-
-                    if(currentBuilding != null)
-                    {
-                        index ++;
-                        continue;
-                    }
-
-                    newOrder.Add(new KeyValuePair<IBuildingRow, IBuilding>(thisRow, buildingToAssign));
-                    
-                    index++;
-                }
+                AssignBuilding(BuildingRows[i], _lastOrder[i]);
             }
 
-            foreach(KeyValuePair<IBuildingRow, IBuilding> pair in newOrder)
-            {
-                AssignBuilding(pair.Key, pair.Value);
-            }
+            DestroyMatches();
         }
 
-        private void CheckForDestroy()
+        private void DestroyMatches()
         {
-            IGrouping<int, IBuilding> firstToDestroy = _groupedBuildings?.FirstOrDefault
-            (e => e.Count() >= MinMatchCount);
-
-            if(firstToDestroy != null)
-            {
-                DestroyGroup(firstToDestroy);
-                
-                SortBuildings();
-            }
-        }
-
-        private void DestroyGroup(IGrouping<int, IBuilding> firstToDestroy)
-        {
-            List<IBuilding> destroyList = new();
-            List<IBuilding> destroyListCurrent = new();
+            List<IBuilding> matches = new();
 
             int lastID = -1;
-            
-            foreach(KeyValuePair<IBuildingRow,IBuilding> pair in _rowBuildingDict)
+            bool didDestroy = false;
+
+            for(int i = 0; i < BuildingRows.Count; i ++)
             {
+                IBuildingRow row = BuildingRows[i];
+
+                if(row.Building == null) continue;
+
                 if(lastID == -1)
                 {
-                    lastID = pair.Value.ID;
-                    break;
+                    lastID = row.Building.ID;
+                    matches.Add(row.Building);
+
+                    continue;
                 }
 
-                if(lastID == pair.Value.ID)
+                if(row.Building.IsMoving)
                 {
-                    destroyListCurrent.Add(pair.Value);
+                    matches.Clear();
+                    lastID = -1;
 
-                    if(destroyListCurrent.Count % 3 == 0)
+                    continue;
+                }
+
+                if(lastID == row.Building.ID)
+                {
+                    matches.Add(row.Building);
+
+                    if(matches.Count % MinMatchCount == 0)
                     {
+                        didDestroy = true;
+
                         Vector3 destroyPos = Vector3.zero;
-                        
-                        foreach(IBuilding building in destroyListCurrent)
+
+                        foreach(IBuilding building in matches)
                         {
                             destroyPos += building.Transform.position;
                             RemoveBuilding(building);
                         }
-                        
-                        destroyPos /= firstToDestroy.Count();
+
+                        destroyPos /= MinMatchCount;
 
                         destroyPos += _settings.DestroyAnimOffY * PlayerVM.PlayerCam.Up;
-                        
-                        foreach(IBuilding building in destroyList)
-                        {
-                            IBuilding building1 = building;
 
-                            building.DestroyMatch(destroyPos,
+                        foreach(IBuilding building in matches)
+                        {
+                            building.DestroyMatch
+                            (
+                                destroyPos,
                                 delegate
                                 {
-                                    BuildingEvents.PreBuildingDestroy?.Invoke(building1);
-                                    building1.Transform.gameObject.Destroy();
+                                    BuildingEvents.PreBuildingDestroy?.Invoke(building);
+                                    building.Transform.gameObject.Destroy();
 
                                     Instantiate
-                                    (_settings.DestroyParticlePrefab, destroyPos, Quaternion.identity);
-                                });
+                                    (
+                                        _settings.DestroyParticlePrefab,
+                                        destroyPos,
+                                        Quaternion.identity
+                                    );
+                                }
+                            );
                         }
-                        
-                        destroyList.AddRange(destroyListCurrent);
-                        destroyListCurrent.Clear();
+
+                        matches.Clear();
                     }
                 }
                 else
                 {
-                    lastID = pair.Value.ID;
-                    destroyListCurrent.Clear();
+                    matches.Clear();
+                    lastID = row.Building.ID;
+                    matches.Add(row.Building);
                 }
             }
+
+            if(didDestroy) SortBuildings();
         }
 
         private void RemoveBuilding(IBuilding arg0) => AssignBuilding(null, arg0);
 
-        private int _incBuildingCount;
-        
-        private void AssignBuilding(IBuildingRow emptyRow, IBuilding arg0, bool terrainPick = false)
+        private void AssignBuilding(IBuildingRow newRow, IBuilding building, bool terrainPick = false)
         {
-            if(arg0.Row != null) _rowBuildingDict[arg0.Row] = null;
-
-            if(emptyRow != null) _rowBuildingDict[emptyRow] = arg0;
+            if(building.Row?.Building == building) building.Row.SetBuilding(null);
+            
+            newRow?.SetBuilding(building);
 
             if(terrainPick)
             {
-                _incBuildingCount ++;
-                arg0.AssignRow
+                building.AssignRow
                 (
-                    emptyRow,
+                    newRow,
                     true,
-                    delegate
-                    {
-                        _incBuildingCount --;
-                        
-                        if(_incBuildingCount == 0)
-                        {
-                            CheckForDestroy();
-                        }
-                    }
+                    DestroyMatches
                 );
             }
             else
             {
-                arg0.AssignRow(emptyRow);
+                building.AssignRow(newRow);
             }
         }
 
         private bool TryGetEmptyRow(out IBuildingRow firstEmpty)
         {
-            firstEmpty = _rowBuildingDict.FirstOrDefault(e => e.Value == null).Key;
+            firstEmpty = BuildingRows.FirstOrDefault(e => e.Building == null);
 
             return firstEmpty != null;
         }
@@ -241,4 +218,25 @@ namespace UI.Main.Components
     }
 
     [Serializable] public class BuildingRowSerialized : SerializedInterface<IBuildingRow> {}
+
+    [Serializable]
+    public class BuildingRows : List<IBuildingRow>
+    {
+        public int BuildingCount() {return this.Count(e => e.Building != null);}
+
+        public int GetSameIDBuildingCount(IBuilding arg0)
+        {
+            return this.Count(e => e.Building?.ID == arg0.ID);
+        }
+
+        public List<IGrouping<int, IBuilding>> GetBuildingsGroupedByID()
+        {
+            return this
+            .Select(e => e.Building)
+            .NotNull()
+            .GroupBy(e => e.ID)
+            .OrderBy(group => group.Key)
+            .ToList();
+        }
+    }
 }

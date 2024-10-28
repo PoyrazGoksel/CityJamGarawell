@@ -24,9 +24,11 @@ namespace Components.Buildings
         [SerializeField] private Collider _myCollider;
         private Settings _settings;
         private Sequence _arriveAnimSeq;
+        private Sequence _moveSeq;
         public int ID => _id;
         public Transform Transform{get;private set;}
         public IBuildingRow Row{get;private set;}
+        public bool IsMoving{get;private set;}
         public ITweenContainer TweenContainer{get;set;}
 
         private void Awake()
@@ -38,7 +40,10 @@ namespace Components.Buildings
 
         public void AssignRow(IBuildingRow buildingRow, bool terrainPick = false, TweenCallback onComplete = null)
         {
-            Transform.parent = PlayerVM.PlayerCam.Transform;
+            if(Transform)
+            {
+                Transform.parent = PlayerVM.PlayerCam.Transform;
+            }
 
             Row = buildingRow;
  
@@ -48,8 +53,13 @@ namespace Components.Buildings
                 return;
             }
 
+            if(_moveSeq.IsActive()) _moveSeq.Kill();
+            
+            _moveSeq = DOTween.Sequence();
             TweenContainer.AddSequence = DOTween.Sequence();
 
+            IsMoving = true;
+            
             if(terrainPick)
             {
                 TweenContainer.AddedSeq.Insert
@@ -112,10 +122,11 @@ namespace Components.Buildings
 
             TweenContainer.AddedSeq.SetEase(_settings.AssignAnimEase);
 
-            if (onComplete != null)
+            TweenContainer.AddedSeq.onComplete += delegate
             {
-                TweenContainer.AddedSeq.onComplete += onComplete;
-            }
+                IsMoving = false;
+                onComplete?.Invoke();
+            };
         }
 
         public void DestroyMatch
@@ -127,7 +138,10 @@ namespace Components.Buildings
             (Transform.DOLocalMove(PlayerVM.GetLocalUnderCam(destroyPos), _settings.DestroyAnimDur));
 
             TweenContainer.AddedSeq.SetEase(_settings.DestroyAnimEase);
-            TweenContainer.AddedSeq.onComplete += onComplete;
+            TweenContainer.AddedSeq.onComplete += delegate
+            {
+                onComplete?.Invoke();
+            };
         }
 
         protected override void RegisterEvents()
@@ -172,6 +186,7 @@ namespace Components.Buildings
         int ID{get;}
         Transform Transform{get;}
         IBuildingRow Row{get;}
+        bool IsMoving{get;}
 
         void AssignRow(IBuildingRow buildingRow,bool terrainPick = false, TweenCallback onComplete = null);
 
