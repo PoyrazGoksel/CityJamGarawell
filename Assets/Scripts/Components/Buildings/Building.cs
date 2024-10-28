@@ -12,15 +12,18 @@ using Zenject;
 
 namespace Components.Buildings
 {
-    public partial class Building : EventListenerMono, IBuilding, ITweenContainerBind, IBuildingEditor
+    public partial class Building : EventListenerMono, IBuilding, ITweenContainerBind
     {
         [Inject] private ProjectSettings ProjectSettings{get;set;}
         [Inject] private BuildingEventsInternal BuildingEventsInternal{get;set;}
         [Inject] private BuildingEvents BuildingEvents{get;set;}
         [Inject] private PlayerVM PlayerVM{get;set;}
+        public Bounds Bounds => _myCollider.bounds;
         [SerializeField] private int _id;
         [SerializeField] private float _uiSize;
+        [SerializeField] private Collider _myCollider;
         private Settings _settings;
+        private Sequence _arriveAnimSeq;
         public int ID => _id;
         public Transform Transform{get;private set;}
         public IBuildingRow Row{get;private set;}
@@ -33,30 +36,83 @@ namespace Components.Buildings
             Transform = transform;
         }
 
-        public void AssignRow(IBuildingRow buildingRow, TweenCallback onComplete = null)
+        public void AssignRow(IBuildingRow buildingRow, bool terrainPick = false, TweenCallback onComplete = null)
         {
-            Transform.parent = PlayerVM.PlayerCam.transform;
-            
-            Row = buildingRow;
+            Transform.parent = PlayerVM.PlayerCam.Transform;
 
-            if(Row == null)
+            Row = buildingRow;
+ 
+            if (Row == null)
             {
-                //Queued for destroy
+                // Queued for destroy
                 return;
             }
-            
+
             TweenContainer.AddSequence = DOTween.Sequence();
-            TweenContainer.AddedSeq.Append(Transform.DOLocalMove(PlayerVM.GetLocalUnderCam(Row.Transform.position), _settings.RowAssignAnimDur));
-            TweenContainer.AddedSeq.Insert(0f, Transform.DOScale(Vector3.one * _uiSize, _settings.RowAssignAnimDur));
 
-            TweenContainer.AddedSeq.onComplete += delegate
+            if(terrainPick)
             {
-                Row.BuildingArrived();
-                BuildingEvents.BuildingArrivedToRow?.Invoke(this);
-            };
-             
+                TweenContainer.AddedSeq.Insert
+                (
+                    0f,
+                    Transform
+                    .DOMove
+                    (
+                        Transform.position + Vector3.up * 10f,
+                        _settings.RowAssignAnimDur * 0.5f
+                    )
+                );
+                
+                TweenContainer.AddedSeq.Insert
+                (
+                    _settings.RowAssignAnimDur * 0.5f,
+                    Transform
+                    .DOLocalMove
+                    (
+                        PlayerVM.GetLocalUnderCam(Row.Transform.position),
+                        _settings.RowAssignAnimDur * 0.5f
+                    )
+                );
+                
+                TweenContainer.AddedSeq.Insert
+                (
+                    _settings.RowAssignAnimDur * 0.5f,
+                    Transform
+                    .DOScale
+                    (
+                        Vector3.one * _uiSize,
+                        _settings.RowAssignAnimDur * 0.5f
+                    )
+                );
+            }
+            else
+            {
+                TweenContainer.AddedSeq.Insert
+                (
+                    0f,
+                    Transform
+                    .DOLocalMove
+                    (
+                        PlayerVM.GetLocalUnderCam(Row.Transform.position),
+                        _settings.RowAssignAnimDur
+                    )
+                );
+                
+                TweenContainer.AddedSeq.Insert
+                (
+                    0f,
+                    Transform
+                    .DOScale
+                    (
+                        Vector3.one * _uiSize,
+                        _settings.RowAssignAnimDur
+                    )
+                );
+            }
 
-            if(onComplete != null)
+            TweenContainer.AddedSeq.SetEase(_settings.AssignAnimEase);
+
+            if (onComplete != null)
             {
                 TweenContainer.AddedSeq.onComplete += onComplete;
             }
@@ -65,9 +121,13 @@ namespace Components.Buildings
         public void DestroyMatch
         (Vector3 destroyPos, TweenCallback onComplete = null)
         {
-            TweenContainer.AddTween = Transform.DOLocalMove(PlayerVM.GetLocalUnderCam(destroyPos), _settings.DestroyAnimDur);
+            TweenContainer.AddSequence = DOTween.Sequence();
+            
+            TweenContainer.AddedSeq.Append
+            (Transform.DOLocalMove(PlayerVM.GetLocalUnderCam(destroyPos), _settings.DestroyAnimDur));
 
-            TweenContainer.AddedTween.onComplete += onComplete;
+            TweenContainer.AddedSeq.SetEase(_settings.DestroyAnimEase);
+            TweenContainer.AddedSeq.onComplete += onComplete;
         }
 
         protected override void RegisterEvents()
@@ -93,8 +153,12 @@ namespace Components.Buildings
         {
             public float RowAssignAnimDur => _rowAssignAnimDur;
             public float DestroyAnimDur => _destroyAnimDur;
+            public Ease AssignAnimEase => _assignAnimEase;
+            public Ease DestroyAnimEase => _destroyAnimEase;
             [SerializeField] private float _rowAssignAnimDur = 1f;
             [SerializeField] private float _destroyAnimDur = 0.5f;
+            [SerializeField] private Ease _assignAnimEase = Ease.Linear;
+            [SerializeField] private Ease _destroyAnimEase = Ease.Linear;
         }
     }
 
@@ -109,7 +173,7 @@ namespace Components.Buildings
         Transform Transform{get;}
         IBuildingRow Row{get;}
 
-        void AssignRow(IBuildingRow buildingRow, TweenCallback onComplete = null);
+        void AssignRow(IBuildingRow buildingRow,bool terrainPick = false, TweenCallback onComplete = null);
 
         void DestroyMatch(Vector3 destroyPos, TweenCallback onComplete = null);
     }

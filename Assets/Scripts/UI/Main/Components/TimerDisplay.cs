@@ -39,9 +39,10 @@ namespace UI.Main.Components
                     _timeRemaining = 0;
 
                     RenderTxt(0,0);
-                    
-                    _timerRoutine.StopCoroutine();
+
+                    Debug.LogWarning("FailCond: Time Out");
                     LevelEvents.TimeOut?.Invoke();
+                    _timerRoutine.StopCoroutine();
                 }
             }
         }

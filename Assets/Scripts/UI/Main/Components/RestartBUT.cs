@@ -4,7 +4,7 @@ using Zenject;
 
 namespace UI.Main.Components
 {
-    public class RestartBUT : UIButtonIMG
+    public class RestartBUT : UIButtonTMP
     {
         [Inject] private UIEvents UIEvents{get;set;}
 

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using Components;
 using Components.Buildings;
-using Extensions.System;
 using Sirenix.OdinInspector;
 using UI.Main.Components;
 using UnityEngine;
@@ -15,11 +15,13 @@ namespace Settings
         public List<BuildingData> BuildingDatasByID => _buildingDatasByID;
         public List<LevelData> Levels => _levels;
         public Building.Settings BuildingSettings => _buildingSettings;
-        public BuildingRow.Settings BuildingRowSettings => _buildingRowSettings;
+        public BuildingQueue.Settings BuildingQueueSettings => _buildingQueueSettings;
+        public PlayerCam.Settings PlayerCamSettings => _playerCamSettings;
         [SerializeField] private List<LevelData> _levels;
         [SerializeField] private List<BuildingData> _buildingDatasByID = new();
         [SerializeField] private Building.Settings _buildingSettings;
-        [SerializeField] private BuildingRow.Settings _buildingRowSettings;
+        [SerializeField] private BuildingQueue.Settings _buildingQueueSettings;
+        [SerializeField] private PlayerCam.Settings _playerCamSettings;
 
         [Button]
         private void AssignListIndexToBuildingIDs(bool areYouSure)

@@ -66,7 +66,7 @@ namespace Extensions.Unity.MonoHelper
                 }
                 else
                 {
-                    Debug.LogError("UIButtonTMP needs a TextMeshProUGUI in its children!");
+                    // Debug.LogError("UIButtonTMP needs a TextMeshProUGUI in its children!");
                 }
             }
         }

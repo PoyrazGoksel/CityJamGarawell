@@ -26,22 +26,6 @@ namespace UI.Main.Components
             BuildingEvents.PreBuildingDestroy += OnPreBuildingDestroy;
         }
 
-        private void OnPreBuildingDestroy(IBuilding arg0)
-        {
-            BuildingTask firstTask = _buildingTasks.FirstOrDefault(e => e.ID == arg0.ID);
-
-            if(firstTask)
-            {
-                firstTask.Decrease();
-
-                if(firstTask.Remaining <= 0)
-                {
-                    _buildingTasks.Remove(firstTask);
-                    firstTask.Complete();
-                }
-            }
-        }
-
         private void OnLevelLoaded(LevelData arg0)
         {
             TaskBuildings task = arg0.TaskBuildings;
@@ -57,6 +41,22 @@ namespace UI.Main.Components
                 buildingTask.SetTask(thisID, ProjectSettings.BuildingDatasByID[thisID].Preview, idToCount.Value);
                 
                 _buildingTasks.Add(buildingTask);
+            }
+        }
+
+        private void OnPreBuildingDestroy(IBuilding arg0)
+        {
+            BuildingTask firstTask = _buildingTasks.FirstOrDefault(e => e.ID == arg0.ID);
+
+            if(firstTask)
+            {
+                firstTask.Decrease();
+
+                if(firstTask.Remaining <= 0)
+                {
+                    _buildingTasks.Remove(firstTask);
+                    firstTask.Complete();
+                }
             }
         }
 

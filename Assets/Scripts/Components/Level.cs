@@ -1,6 +1,5 @@
 ﻿using Components.Buildings;
 using Events;
-using Extensions.Unity.Utils;
 using Settings;
 using UnityEngine;
 using Zenject;
@@ -37,7 +36,8 @@ namespace Components
 
             if(_reqBuildings.Count == 0)
             {
-                LevelEvents.LevelTaskComplete?.Invoke();
+                Debug.LogWarning("WinCond: Task Complete");
+                LevelEvents.LevelSuccess?.Invoke();
             }
         }
 
@@ -45,6 +45,18 @@ namespace Components
         {
             BuildingEvents.PreBuildingDestroy += OnPreBuildingDestroy;
             LevelEvents.LevelLoaded += OnLevelLoaded;
+            LevelEvents.NoRowsLeft += OnNoRowsLeft;
+            LevelEvents.TimeOut += OnTimeOut;
+        }
+
+        private void OnTimeOut()
+        {
+            LevelEvents.LevelFail?.Invoke();
+        }
+
+        private void OnNoRowsLeft()
+        {
+            LevelEvents.LevelFail?.Invoke();
         }
 
         private void OnLevelLoaded(LevelData arg0)
@@ -60,6 +72,9 @@ namespace Components
         private void UnRegisterEvents()
         {
             BuildingEvents.PreBuildingDestroy -= OnPreBuildingDestroy;
+            LevelEvents.LevelLoaded -= OnLevelLoaded;
+            LevelEvents.NoRowsLeft -= OnNoRowsLeft;
+            LevelEvents.TimeOut -= OnTimeOut;
         }
     }
 }

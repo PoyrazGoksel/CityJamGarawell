@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Components.Buildings
 {
-    public partial class Building
+    public partial class Building : IBuildingEditor
     {
         public void SetID(int newID)
         {

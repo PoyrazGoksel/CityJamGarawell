@@ -1,12 +1,11 @@
 ﻿using UnityEngine;
 using Events;
-using Extensions.Unity.MonoHelper;
 using Extensions.Unity.Utils;
 using Zenject;
 
 namespace Components
 {
-    public class PlayerInputListener : EventListenerMono
+    public class PlayerInputListener : MonoBehaviour
     {
         [Inject] private BuildingEvents BuildingEvents { get; set; }
         [Inject] private InputEvents InputEvents{get;set;}
@@ -86,28 +85,6 @@ namespace Components
 
                 _lastPanPosition = touch.position;
             }
-        }
-
-        protected override void RegisterEvents()
-        {
-            BuildingEvents.SortingRows += OnSortingRows;
-        }
-
-        private void OnSortingRows(bool isSorting)
-        {
-            if (isSorting)
-            {
-                _inputRoutine.StopCoroutine();
-            }
-            else
-            {
-                _inputRoutine.StartCoroutine();
-            }
-        }
-
-        protected override void UnRegisterEvents()
-        {
-            BuildingEvents.SortingRows -= OnSortingRows;
         }
     }
 }

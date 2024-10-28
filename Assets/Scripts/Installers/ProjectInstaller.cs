@@ -62,7 +62,13 @@ namespace Installers
         protected override void RegisterEvents()
         {
             _uiEvents.RestartClick += OnRestartClick;
+            _uiEvents.NextLevelClick += OnNextLevelClick;
             SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private void OnNextLevelClick()
+        {
+            LoadMainScene();
         }
 
         private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
@@ -81,6 +87,7 @@ namespace Installers
         protected override void UnRegisterEvents()
         {
             _uiEvents.RestartClick -= OnRestartClick;
+            _uiEvents.NextLevelClick -= OnNextLevelClick;
             SceneManager.sceneLoaded -= OnSceneLoaded;
         }
     }

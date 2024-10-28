@@ -8,6 +8,7 @@ namespace Events
         public UnityAction<LevelData> LevelLoaded;
         public UnityAction TimeOut;
         public UnityAction NoRowsLeft;
-        public UnityAction LevelTaskComplete;
+        public UnityAction LevelFail;
+        public UnityAction LevelSuccess;
     }
 }

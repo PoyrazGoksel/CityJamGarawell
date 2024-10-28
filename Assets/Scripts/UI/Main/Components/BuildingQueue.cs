@@ -7,6 +7,7 @@ using Extensions.System;
 using Extensions.Unity;
 using Extensions.Unity.Entities;
 using Extensions.Unity.MonoHelper;
+using Settings;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using ViewModels;
@@ -16,15 +17,19 @@ namespace UI.Main.Components
 {
     public class BuildingQueue : EventListenerMono
     {
+        private const int MinMatchCount = 3;
         [Inject] private BuildingEvents BuildingEvents{get;set;}
         [Inject] private PlayerVM PlayerVM{get;set;}
         [Inject] private LevelEvents LevelEvents{get;set;}
+        [Inject] private ProjectSettings ProjectSettings{get;set;}
         [SerializeField] private List<BuildingRowSerialized> _buildingRows;
         [ShowInInspector] private Dictionary<IBuildingRow, IBuilding> _rowBuildingDict = new();
         private List<IGrouping<int, IBuilding>> _groupedBuildings;
+        private Settings _settings;
 
         private void Awake()
         {
+            _settings = ProjectSettings.BuildingQueueSettings;
             CreateBuildingQueue();
         }
 
@@ -38,16 +43,25 @@ namespace UI.Main.Components
 
         private bool TryFitBuilding(IBuilding arg0)
         {
+            if(_rowBuildingDict.Values.Count == _rowBuildingDict.Count.ToIndex())
+            {
+                int incomingMatch = _rowBuildingDict.Values.Count(e => e.ID == arg0.ID);
+
+                if(incomingMatch <= 2)
+                {
+                    Debug.LogWarning("FailCond: NoRows");
+                    LevelEvents.NoRowsLeft?.Invoke();
+                }
+            }
+            
             if(TryGetEmptyRow(out IBuildingRow emptyRow))
             {
-                AssignBuilding(arg0, emptyRow);
+                AssignBuilding(emptyRow, arg0, true);
 
                 SortBuildings();
                 
                 return true;
             }
-         
-            LevelEvents.NoRowsLeft?.Invoke();
             
             return false;
         }
@@ -62,6 +76,8 @@ namespace UI.Main.Components
 
             int index = 0;
 
+            List<KeyValuePair<IBuildingRow, IBuilding>> newOrder = new();
+            
             foreach (IGrouping<int, IBuilding> group in _groupedBuildings)
             {
                 foreach (IBuilding buildingToAssign in group.OrderBy(b => b.ID))
@@ -76,69 +92,123 @@ namespace UI.Main.Components
                         continue;
                     }
 
-                    AssignBuilding(buildingToAssign, thisRow);
-
+                    newOrder.Add(new KeyValuePair<IBuildingRow, IBuilding>(thisRow, buildingToAssign));
+                    
                     index++;
                 }
+            }
+
+            foreach(KeyValuePair<IBuildingRow, IBuilding> pair in newOrder)
+            {
+                AssignBuilding(pair.Key, pair.Value);
             }
         }
 
         private void CheckForDestroy()
         {
             IGrouping<int, IBuilding> firstToDestroy = _groupedBuildings?.FirstOrDefault
-            (e => e.Count() >= 3);
+            (e => e.Count() >= MinMatchCount);
 
             if(firstToDestroy != null)
             {
                 DestroyGroup(firstToDestroy);
-                    
+                
                 SortBuildings();
             }
         }
 
         private void DestroyGroup(IGrouping<int, IBuilding> firstToDestroy)
         {
-            Vector3 destroyPos = Vector3.zero;
+            List<IBuilding> destroyList = new();
+            List<IBuilding> destroyListCurrent = new();
 
-            firstToDestroy.DoToAll(e =>
+            int lastID = -1;
+            
+            foreach(KeyValuePair<IBuildingRow,IBuilding> pair in _rowBuildingDict)
             {
-                destroyPos +=  e.Transform.position;
-                RemoveBuilding(e);
-            });
+                if(lastID == -1)
+                {
+                    lastID = pair.Value.ID;
+                    break;
+                }
 
-            destroyPos /= firstToDestroy.Count();
+                if(lastID == pair.Value.ID)
+                {
+                    destroyListCurrent.Add(pair.Value);
 
-            //TODO: To settings
-            float destroyPosYOff = 10f;
-
-            destroyPos += destroyPosYOff * PlayerVM.PlayerCam.Up;
-
-            foreach(IBuilding building in firstToDestroy)
-            {
-                building.DestroyMatch(destroyPos,
-                    delegate
+                    if(destroyListCurrent.Count % 3 == 0)
                     {
-                        BuildingEvents.PreBuildingDestroy?.Invoke(building);
-                        building.Transform.gameObject.Destroy();
-                    });
+                        Vector3 destroyPos = Vector3.zero;
+                        
+                        foreach(IBuilding building in destroyListCurrent)
+                        {
+                            destroyPos += building.Transform.position;
+                            RemoveBuilding(building);
+                        }
+                        
+                        destroyPos /= firstToDestroy.Count();
+
+                        destroyPos += _settings.DestroyAnimOffY * PlayerVM.PlayerCam.Up;
+                        
+                        foreach(IBuilding building in destroyList)
+                        {
+                            IBuilding building1 = building;
+
+                            building.DestroyMatch(destroyPos,
+                                delegate
+                                {
+                                    BuildingEvents.PreBuildingDestroy?.Invoke(building1);
+                                    building1.Transform.gameObject.Destroy();
+
+                                    Instantiate
+                                    (_settings.DestroyParticlePrefab, destroyPos, Quaternion.identity);
+                                });
+                        }
+                        
+                        destroyList.AddRange(destroyListCurrent);
+                        destroyListCurrent.Clear();
+                    }
+                }
+                else
+                {
+                    lastID = pair.Value.ID;
+                    destroyListCurrent.Clear();
+                }
             }
         }
 
-        private void RemoveBuilding(IBuilding arg0) => AssignBuilding(arg0, null);
+        private void RemoveBuilding(IBuilding arg0) => AssignBuilding(null, arg0);
 
-        private void AssignBuilding(IBuilding arg0, IBuildingRow emptyRow)
+        private int _incBuildingCount;
+        
+        private void AssignBuilding(IBuildingRow emptyRow, IBuilding arg0, bool terrainPick = false)
         {
-            if(arg0.Row != null)
-            {
-                _rowBuildingDict[arg0.Row] = null;
-            }
+            if(arg0.Row != null) _rowBuildingDict[arg0.Row] = null;
 
-            if(emptyRow != null)
-            {
-                _rowBuildingDict[emptyRow] = arg0;
-            }
+            if(emptyRow != null) _rowBuildingDict[emptyRow] = arg0;
 
-            arg0.AssignRow(emptyRow);
+            if(terrainPick)
+            {
+                _incBuildingCount ++;
+                arg0.AssignRow
+                (
+                    emptyRow,
+                    true,
+                    delegate
+                    {
+                        _incBuildingCount --;
+                        
+                        if(_incBuildingCount == 0)
+                        {
+                            CheckForDestroy();
+                        }
+                    }
+                );
+            }
+            else
+            {
+                arg0.AssignRow(emptyRow);
+            }
         }
 
         private bool TryGetEmptyRow(out IBuildingRow firstEmpty)
@@ -151,12 +221,6 @@ namespace UI.Main.Components
         protected override void RegisterEvents()
         {
             BuildingEvents.BuildingClicked += OnBuildingClicked;
-            BuildingEvents.BuildingArrivedToRow += OnBuildingArrivedToRow;
-        }
-
-        private void OnBuildingArrivedToRow(IBuilding arg0)
-        {
-            CheckForDestroy();
         }
 
         private void OnBuildingClicked(IBuilding arg0) {TryFitBuilding(arg0);}
@@ -164,7 +228,15 @@ namespace UI.Main.Components
         protected override void UnRegisterEvents()
         {
             BuildingEvents.BuildingClicked -= OnBuildingClicked;
-            BuildingEvents.BuildingArrivedToRow -= OnBuildingArrivedToRow;
+        }
+
+        [Serializable]
+        public class Settings
+        {
+            public GameObject DestroyParticlePrefab => _destroyParticlePrefab;
+            public float DestroyAnimOffY => _destroyAnimOffY;
+            [SerializeField] private GameObject _destroyParticlePrefab;
+            [SerializeField] private float _destroyAnimOffY = 10f;
         }
     }
 

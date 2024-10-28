@@ -12,6 +12,7 @@ namespace ViewModels
     public class PlayerVM : EventListenerClass
     {
         [Inject] private ProjectEvents ProjectEvents{get;set;}
+        [Inject] private LevelEvents LevelEvents{get;set;}
         public int Level => _playerModel.Level;
         public PlayerCam PlayerCam{get;private set;}
         private PlayerModel _playerModel;
@@ -45,6 +46,12 @@ namespace ViewModels
             _playerModel = JsonUtilityWithCall.FromJson<PlayerModel>(json);
         }
 
+        private void Save()
+        {
+            string json = JsonUtilityWithCall.ToJson(_playerModel);
+            JsonUtilityWithCall.WriteToEnd(EnvVar.PlayerSavePath, json);
+        }
+        
         private void CreateDefault()
         {
             _playerModel = new PlayerModel();
@@ -53,13 +60,25 @@ namespace ViewModels
 
         public void SetPlayerCam(PlayerCam playerCam) {PlayerCam = playerCam;}
 
-        protected override void RegisterEvents() {}
-
-        protected override void UnRegisterEvents() {}
-
         public Vector3 GetLocalUnderCam(Vector3 worldPos)
         {
-            return PlayerCam.transform.InverseTransformPoint(worldPos);
+            return PlayerCam.Transform.InverseTransformPoint(worldPos);
+        }
+
+        protected override void RegisterEvents()
+        {
+            LevelEvents.LevelSuccess += OnLevelSuccess;
+        }
+
+        private void OnLevelSuccess()
+        {
+            _playerModel.Level ++;
+            Save();
+        }
+
+        protected override void UnRegisterEvents()
+        {
+            LevelEvents.LevelSuccess -= OnLevelSuccess;
         }
     }
 }

@@ -14,17 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _levels:
   - _levelPrefab: {fileID: 3250120825995641414, guid: 9896efa002c324648b3c6aee69f0fd38, type: 3}
-    _levelTimerMins: 4
+    _levelTimerMins: 1
     _taskBuildings:
       _tKeys: 0200000004000000
       _tValues: 0300000003000000
   - _levelPrefab: {fileID: 4437366102073533337, guid: e0e424310f68f7841b7be836690964df, type: 3}
-    _levelTimerMins: 4
+    _levelTimerMins: 1
     _taskBuildings:
       _tKeys: 01000000
       _tValues: 12000000
   - _levelPrefab: {fileID: 4437366102073533337, guid: d28aed5376c11674a93fce9ac083b036, type: 3}
-    _levelTimerMins: 4
+    _levelTimerMins: 1
     _taskBuildings:
       _tKeys: 070000000100000008000000
       _tValues: 0c0000000f00000009000000
@@ -52,6 +52,14 @@ MonoBehaviour:
   _buildingSettings:
     _rowAssignAnimDur: 1
     _destroyAnimDur: 0.5
+    _assignAnimEase: 35
+    _destroyAnimEase: 6
   _buildingRowSettings:
     _buildingArrivedSagAmount: -10
-    _sagAnimDurHalf: 0.5
+    _sagingAnimDur: 0.1
+  _buildingQueueSettings:
+    _destroyParticlePrefab: {fileID: 100000, guid: a4585a9f0750b8b4a80739050af7ecbc, type: 3}
+    _destroyAnimOffY: 10
+  _playerCamSettings:
+    _zoomSpeed: -0.1
+    _panSpeed: 5
