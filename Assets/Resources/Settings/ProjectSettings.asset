@@ -52,11 +52,10 @@ MonoBehaviour:
   _buildingSettings:
     _rowAssignAnimDur: 1
     _destroyAnimDur: 0.5
-    _assignAnimEase: 35
+    _assignAnimEase: 21
     _destroyAnimEase: 6
-  _buildingRowSettings:
-    _buildingArrivedSagAmount: -10
-    _sagingAnimDur: 0.1
+    _terrainPickAnimHeight: 20
+    _terrainPickAnimDur: 1
   _buildingQueueSettings:
     _destroyParticlePrefab: {fileID: 100000, guid: a4585a9f0750b8b4a80739050af7ecbc, type: 3}
     _destroyAnimOffY: 10

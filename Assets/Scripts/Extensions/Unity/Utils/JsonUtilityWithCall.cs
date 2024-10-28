@@ -25,11 +25,9 @@ namespace Extensions.Unity.Utils
         /// </summary>
         /// <param name="saveData"></param>
         /// <param name="path"></param>
-        public static void WriteToEnd(string saveData, string path) => WriteToEnd(saveData, path, false, null);
-        public static void WriteToEnd(string saveData, string path, bool append) => WriteToEnd(saveData, path, append, null);
-        public static void WriteToEnd(string saveData, string path, Encoding encoding) => WriteToEnd(saveData, path, false, encoding);
-
-        public static void WriteToEnd(string saveData, string path, bool append, Encoding encoding)
+        /// <param name="append"></param>
+        /// <param name="encoding"></param>
+        public static void WriteToEnd(string saveData, string path, bool append = false, Encoding encoding = null)
         {
             StreamWriter streamWriter;
 

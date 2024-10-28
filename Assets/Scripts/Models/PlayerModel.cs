@@ -1,12 +1,13 @@
 ﻿using System;
 using Extensions.Unity.Utils;
+using UnityEngine;
 
 namespace Models
 {
     [Serializable]
     public class PlayerModel : IJsonCallBackReceiver
     {
-        public int Level = 0;
+        [SerializeField] public int Level = 0;
 
         public void Defaults()
         {

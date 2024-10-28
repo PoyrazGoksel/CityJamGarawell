@@ -7,6 +7,7 @@ using Extensions.System;
 using Extensions.Unity;
 using Extensions.Unity.Entities;
 using Extensions.Unity.MonoHelper;
+using Extensions.Unity.Utils;
 using Settings;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -51,10 +52,13 @@ namespace UI.Main.Components
             {
                 int incomingMatchCount = BuildingRows.GetSameIDBuildingCount(arg0);
 
-                if(incomingMatchCount <= 2)
+                if(incomingMatchCount < 2)
                 {
-                    Debug.LogWarning("FailCond: NoRows");
-                    LevelEvents.NoRowsLeft?.Invoke();
+                    if(BuildingRows.HasMatches(MinMatchCount) == false)
+                    {
+                        Debug.LogWarning("FailCond: NoRows");
+                        LevelEvents.NoRowsLeft?.Invoke();   
+                    }
                 }
             }
             
@@ -62,8 +66,6 @@ namespace UI.Main.Components
             {
                 AssignBuilding(emptyRow, arg0, true);
 
-                SortBuildings();
-                
                 return true;
             }
             
@@ -89,10 +91,8 @@ namespace UI.Main.Components
             int lastID = -1;
             bool didDestroy = false;
 
-            for(int i = 0; i < BuildingRows.Count; i ++)
+            foreach(IBuildingRow row in BuildingRows)
             {
-                IBuildingRow row = BuildingRows[i];
-
                 if(row.Building == null) continue;
 
                 if(lastID == -1)
@@ -136,6 +136,7 @@ namespace UI.Main.Components
                             building.DestroyMatch
                             (
                                 destroyPos,
+                                _settings.DestroyAnimOffY,
                                 delegate
                                 {
                                     BuildingEvents.PreBuildingDestroy?.Invoke(building);
@@ -179,7 +180,7 @@ namespace UI.Main.Components
                 (
                     newRow,
                     true,
-                    DestroyMatches
+                    SortBuildings
                 );
             }
             else
@@ -200,7 +201,7 @@ namespace UI.Main.Components
             BuildingEvents.BuildingClicked += OnBuildingClicked;
         }
 
-        private void OnBuildingClicked(IBuilding arg0) {TryFitBuilding(arg0);}
+        private void OnBuildingClicked(IBuilding arg0) => TryFitBuilding(arg0);
 
         protected override void UnRegisterEvents()
         {
@@ -227,6 +228,15 @@ namespace UI.Main.Components
         public int GetSameIDBuildingCount(IBuilding arg0)
         {
             return this.Count(e => e.Building?.ID == arg0.ID);
+        }
+
+        public bool HasMatches(int minMatchCount)
+        {
+            return this
+            .Select(e => e.Building)
+            .NotNull()
+            .GroupBy(e => e.ID)
+            .Any(e => e.Count() >= minMatchCount);
         }
 
         public List<IGrouping<int, IBuilding>> GetBuildingsGroupedByID()

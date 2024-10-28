@@ -34,10 +34,10 @@ namespace ViewModels
             {
                 CreateDefault();
                 ProjectEvents.PlayerCreated?.Invoke();
+                Save();
             }
 
             ProjectEvents.PlayerLoaded?.Invoke();
-            Debug.LogWarning(_playerModel.Level);
         }
 
         private void Load()
@@ -48,8 +48,9 @@ namespace ViewModels
 
         private void Save()
         {
+            Debug.LogWarning($"EnvVar.PlayerSavePath {EnvVar.PlayerSavePath}");
             string json = JsonUtilityWithCall.ToJson(_playerModel);
-            JsonUtilityWithCall.WriteToEnd(EnvVar.PlayerSavePath, json);
+            JsonUtilityWithCall.WriteToEnd(json, EnvVar.PlayerSavePath);
         }
         
         private void CreateDefault()

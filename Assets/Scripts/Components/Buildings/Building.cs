@@ -4,6 +4,7 @@ using Events;
 using Events.Internal;
 using Extensions.DoTween;
 using Extensions.Unity.MonoHelper;
+using Extensions.Unity.Utils;
 using Settings;
 using UI.Main.Components;
 using UnityEngine;
@@ -24,7 +25,6 @@ namespace Components.Buildings
         [SerializeField] private Collider _myCollider;
         private Settings _settings;
         private Sequence _arriveAnimSeq;
-        private Sequence _moveSeq;
         public int ID => _id;
         public Transform Transform{get;private set;}
         public IBuildingRow Row{get;private set;}
@@ -40,42 +40,30 @@ namespace Components.Buildings
 
         public void AssignRow(IBuildingRow buildingRow, bool terrainPick = false, TweenCallback onComplete = null)
         {
-            if(Transform)
-            {
-                Transform.parent = PlayerVM.PlayerCam.Transform;
-            }
+            if(Transform) Transform.parent = PlayerVM.PlayerCam.Transform;
 
             Row = buildingRow;
  
-            if (Row == null)
-            {
-                // Queued for destroy
-                return;
-            }
+            if (Row == null) return;
 
-            if(_moveSeq.IsActive()) _moveSeq.Kill();
-            
-            _moveSeq = DOTween.Sequence();
             TweenContainer.AddSequence = DOTween.Sequence();
-
-            IsMoving = true;
             
             if(terrainPick)
             {
-                TweenContainer.AddedSeq.Insert
+                IsMoving = true;
+
+                TweenContainer.AddedSeq.Append
                 (
-                    0f,
                     Transform
                     .DOMove
                     (
-                        Transform.position + Vector3.up * 10f,
-                        _settings.RowAssignAnimDur * 0.5f
+                        Transform.position + Vector3.up * _settings.TerrainPickAnimHeight,
+                        _settings.TerrainPickAnimDur
                     )
                 );
                 
-                TweenContainer.AddedSeq.Insert
+                TweenContainer.AddedSeq.Append
                 (
-                    _settings.RowAssignAnimDur * 0.5f,
                     Transform
                     .DOLocalMove
                     (
@@ -86,7 +74,7 @@ namespace Components.Buildings
                 
                 TweenContainer.AddedSeq.Insert
                 (
-                    _settings.RowAssignAnimDur * 0.5f,
+                    _settings.TerrainPickAnimDur,
                     Transform
                     .DOScale
                     (
@@ -97,9 +85,8 @@ namespace Components.Buildings
             }
             else
             {
-                TweenContainer.AddedSeq.Insert
+                TweenContainer.AddedSeq.Append
                 (
-                    0f,
                     Transform
                     .DOLocalMove
                     (
@@ -130,9 +117,20 @@ namespace Components.Buildings
         }
 
         public void DestroyMatch
-        (Vector3 destroyPos, TweenCallback onComplete = null)
+        (Vector3 destroyPos, float destroyAnimOffY, TweenCallback onComplete = null)
         {
             TweenContainer.AddSequence = DOTween.Sequence();
+
+            TweenContainer.AddedSeq.Append
+            (
+                Transform
+                .DOLocalMove
+                (
+                    PlayerVM.PlayerCam.Transform.InverseTransformPoint
+                    (Transform.position + PlayerVM.PlayerCam.Up * destroyAnimOffY),
+                    _settings.TerrainPickAnimDur
+                )
+            );
             
             TweenContainer.AddedSeq.Append
             (Transform.DOLocalMove(PlayerVM.GetLocalUnderCam(destroyPos), _settings.DestroyAnimDur));
@@ -169,10 +167,14 @@ namespace Components.Buildings
             public float DestroyAnimDur => _destroyAnimDur;
             public Ease AssignAnimEase => _assignAnimEase;
             public Ease DestroyAnimEase => _destroyAnimEase;
+            public float TerrainPickAnimHeight => _terrainPickAnimHeight;
             [SerializeField] private float _rowAssignAnimDur = 1f;
             [SerializeField] private float _destroyAnimDur = 0.5f;
             [SerializeField] private Ease _assignAnimEase = Ease.Linear;
             [SerializeField] private Ease _destroyAnimEase = Ease.Linear;
+            [SerializeField] private float _terrainPickAnimHeight = 100f;
+            [SerializeField] private float _terrainPickAnimDur = 0.5f;
+            public float TerrainPickAnimDur => _terrainPickAnimDur;
         }
     }
 
@@ -190,6 +192,7 @@ namespace Components.Buildings
 
         void AssignRow(IBuildingRow buildingRow,bool terrainPick = false, TweenCallback onComplete = null);
 
-        void DestroyMatch(Vector3 destroyPos, TweenCallback onComplete = null);
+        void DestroyMatch
+        (Vector3 destroyPos, float destroyAnimOffY, TweenCallback onComplete = null);
     }
 }

@@ -30,8 +30,6 @@ namespace UI.Main.Components
         {
             TaskBuildings task = arg0.TaskBuildings;
 
-            Debug.LogWarning(ProjectSettings.BuildingDatasByID.Count);
-            
             foreach(KeyValuePair<int, int> idToCount in task)
             {
                 GameObject buildingTaskGo = Instantiate(_buildingTaskPrefab, _transform);
